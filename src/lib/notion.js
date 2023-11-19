@@ -1,4 +1,4 @@
-import { Client } from "@notionhq/client";
+import {Client} from "@notionhq/client";
 import config from "config"
 import {UseStore} from "./store.js";
 
@@ -7,69 +7,46 @@ const notion = new Client({
 })
 
 const store = new UseStore()
-export async function sendToNotion(text){
 
-    let response
-
-    const id = config.get(store.items[store.CONTENT_TYPE].db)
-
-    if(id === config.get('NOTION_DB_ID_LINK')){
-        response = await notion.pages.create({
-            parent: {database_id: id},
-            properties: {
-                "Название": {
-                    title: [
-                        {
-                            text: {
-                                content: store.items.link.linkTitle
-                            }
-                        }
-                    ]
-                },
-                "URL": {
-                    type: "url",
-                    url: text
-                }
-            }
-        })
+class UseNotion {
+    constructor(id) {
+        this.id = id
     }
-    else if(id === config.get('NOTION_DB_ID_IDEA') && store.CONTENT_TYPE === 'idea'){
-        response = await notion.pages.create({
-            parent: {database_id: id},
-            properties: {
-                "Название": {
-                    title: [
-                        {
-                            text: {
-                                content: text
-                            }
+
+    title = "Название"
+
+    createTitle(content){
+        return {
+            [this.title]: {
+                title: [
+                    {
+                        text: {
+                            content
                         }
-                    ]
-                },
-                "Идея": {
-                    type: "checkbox",
-                    checkbox: true
-                }
+                    }
+                ]
             }
-        })
+        }
     }
-    else if(id === config.get('NOTION_DB_ID_IDEA') && store.CONTENT_TYPE === 'note'){
-        response = await notion.pages.create({
-            parent: {database_id: id},
-            properties: {
-                "Название": {
-                    title: [
-                        {
-                            text: {
-                                content: store.items.note.noteTitle
-                            }
-                        }
-                    ]
-                }
+
+    createProp(title, type, value){
+
+        //"Идея": {
+        //    type: "checkbox",
+        //    checkbox: true
+        //}
+
+        return {
+            [title]: {
+                type,
+                [type]: value
             }
-        })
+        }
+    }
+
+    async createPageContent(page, text){
         await notion.blocks.children.append({
-            block_id: response.id,
+            block_id: page.id,
             children: [
                 {
                     object: 'block',
@@ -88,21 +65,42 @@ export async function sendToNotion(text){
             ]
         })
     }
-    else {
-        response = await notion.pages.create({
-            parent: {database_id: id},
-            properties: {
-                "Название": {
-                    title: [
-                        {
-                            text: {
-                                content: text
-                            }
-                        }
-                    ]
-                }
-            }
-        })
+
+    createContent(properties) {
+        return {
+            parent: {database_id: this.id},
+            properties
+        }
     }
-    return response
+
+    async create(title, properties = null) {
+
+        const props = properties ? this.createProp(...properties) : {}
+
+        const content = Object.assign(this.createTitle(title), props)
+
+        return await notion.pages.create(this.createContent(content))
+    }
 }
+
+    export async function sendToNotion(text) {
+
+        const use = new UseNotion(config.get(store.items[store.CONTENT_TYPE].db))
+
+        switch (store.CONTENT_TYPE){
+
+            case 'link':
+                return await use.create(store.items.link.linkTitle, ["Url", "url", text])
+
+            case 'idea':
+                return await use.create(text, ["Идея", "checkbox", true])
+
+            case 'note':
+                const page = await use.create(store.items.note.noteTitle)
+                await use.createPageContent(page, text)
+                return page
+
+            default:
+                return await use.create(text)
+        }
+    }
