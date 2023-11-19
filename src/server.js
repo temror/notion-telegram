@@ -9,7 +9,7 @@ const bot = new Telegraf(config.get('TELEGRAM_TOKEN'), {
     handlerTimeout: Infinity
 });
 
-const store = new UseStore(bot)
+const store = new UseStore()
 
 store.init(bot)
 
