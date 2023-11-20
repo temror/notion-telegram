@@ -1,4 +1,4 @@
-export class UseStore{
+export class UseStore {
     constructor() {
         //Singleton
 
@@ -13,7 +13,7 @@ export class UseStore{
 
     CONTENT_TYPE = null
 
-    items= {
+    items = {
         film: {
             value: 'film',
             intro: '📽 Введите название фильма:',
@@ -53,9 +53,9 @@ export class UseStore{
         },
     }
 
-    init(bot){
+    init(bot) {
 
-        Object.keys(this.items).forEach(item=>{
+        Object.keys(this.items).forEach(item => {
 
             bot.command(this.items[item].value, async (ctx) => {
 
@@ -66,26 +66,26 @@ export class UseStore{
 
         })
 
-        bot.command('clear', async (ctx) =>{
+        bot.command('clear', async (ctx) => {
             this.CONTENT_TYPE = null
             ctx.reply('Тип очищен!')
         })
     }
 
-    waitingAnswer(ctx){
+    waitingAnswer(ctx) {
 
-        if(!this.CONTENT_TYPE) {
+        if (!this.CONTENT_TYPE) {
             ctx.reply('Сначала скажи, что будем записывать 😼')
             return true
         }
 
-        if(this.CONTENT_TYPE === 'link' && !this.items.link.linkTitle){
+        if (this.CONTENT_TYPE === this.items.link.value && !this.items.link.linkTitle) {
             ctx.reply('Теперь введите ссылку: 🐋💨')
             this.items.link.linkTitle = ctx.message.text;
             return true
         }
 
-        if(this.CONTENT_TYPE === 'note' && !this.items.note.noteTitle){
+        if (this.CONTENT_TYPE === this.items.note.value && !this.items.note.noteTitle) {
             ctx.reply('Теперь введите саму заметку: ❤️‍🔥')
             this.items.note.noteTitle = ctx.message.text;
             return true
@@ -94,7 +94,7 @@ export class UseStore{
         return false
     }
 
-    clearWaiting(){
+    clearWaiting() {
         this.items.link.linkTitle = null
         this.items.note.noteTitle = null
     }
