@@ -75,9 +75,9 @@ class UseNotion {
 
     async create(title, properties = null) {
 
-        const props = properties ? this.createProp(...properties) : {}
+        const props = properties ? properties.map(item => this.createProp(...item)) : [{}]
 
-        const content = Object.assign(this.createTitle(title), props)
+        const content = Object.assign(this.createTitle(title), ...props)
 
         return await notion.pages.create(this.createContent(content))
     }
@@ -90,10 +90,10 @@ class UseNotion {
         switch (store.CONTENT_TYPE){
 
             case 'link':
-                return await use.create(store.items.link.linkTitle, ["Url", "url", text])
+                return await use.create(store.items.link.linkTitle, [["Url", "url", text]])
 
             case 'idea':
-                return await use.create(text, ["Идея", "checkbox", true])
+                return await use.create(text, [["Идея", "checkbox", true]])
 
             case 'note':
                 const page = await use.create(store.items.note.noteTitle)
