@@ -25,7 +25,7 @@ bot.on(message('text'), async (ctx) => {
 
         const currentItem = store.items[store.CONTENT_TYPE]
 
-        if (!text.trim()) ctx.reply('Текст не может быть пустым!')
+        if (!text.trim()) ctx.reply(store.TRIM_ERROR)
 
         await loader.show()
 

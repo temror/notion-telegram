@@ -13,6 +13,8 @@ export class UseStore {
 
     CONTENT_TYPE = null
 
+    TRIM_ERROR = 'Текст не может быть пустым!'
+
     items = {
         film: {
             value: 'film',
@@ -57,11 +59,11 @@ export class UseStore {
 
         Object.keys(this.items).forEach(item => {
 
-            bot.command(this.items[item].value, async (ctx) => {
+            bot.command(item, async (ctx) => {
 
                 ctx.reply(this.items[item].intro)
 
-                this.CONTENT_TYPE = this.items[item].value
+                this.CONTENT_TYPE = item
             })
 
         })
